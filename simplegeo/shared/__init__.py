@@ -297,15 +297,8 @@ class Client(object):
         """
         if data is not None:
             data = to_unicode(data)
-        params = {}
         body = data
-        request = oauth.Request.from_consumer_and_token(self.consumer,
-            http_method=method, http_url=endpoint, parameters=params)
-
-        request.sign_request(self.signature, self.consumer, None)
-        headers = request.to_header(self.realm)
-        headers['User-Agent'] = 'SimpleGeo Places Client v%s' % __version__
-
+        headers = self._headers(endpoint, method)
         self.headers, content = self.http.request(endpoint, method, body=body, headers=headers)
 
         if self.headers['status'][0] not in ('2', '3'):
@@ -313,7 +306,19 @@ class Client(object):
 
         return self.headers, content
 
+    def _headers(self, endpoint, method):
+        """
+        Make the request headers
+        """
+        params = {}
+        request = oauth.Request.from_consumer_and_token(self.consumer,
+            http_method=method, http_url=endpoint, parameters=params)
 
+        request.sign_request(self.signature, self.consumer, None)
+        headers = request.to_header(self.realm)
+        headers['User-Agent'] = 'SimpleGeo Places Client v%s' % __version__
+        return headers
+    
 class APIError(Exception):
     """Base exception for all API errors."""
 
